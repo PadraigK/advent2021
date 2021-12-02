@@ -9,6 +9,10 @@ fn main() {
         .map(|x| x.parse::<u32>().unwrap())
         .collect();
 
+    day_one(sonar_readings)
+}
+
+fn day_one(sonar_readings: Vec<u32>) {
     let mut current_item: Option<u32> = None;
     let mut deeper_count = 0;
 
