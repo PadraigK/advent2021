@@ -3,10 +3,38 @@ use crate::utils;
 pub fn run() {
   let data: Vec<String> = utils::read_data("day_three");
 
-  part_a(&data);
+  part_a_take2(&data);
   part_b(&data);
 }
 
+fn part_a_take2(data: &Vec<String>) {
+  let row_length: u32 = data.first().unwrap().len() as u32;
+  // threshold for considering the result to be "on"
+  let threshold = data.len() / 2;
+
+  // convert input data to decimal
+  let data: Vec<u64> = data
+    .iter()
+    .map(|x| u64::from_str_radix(x, 2).unwrap())
+    .collect();
+
+  let binary_string: String = (0..row_length)
+    .rev()
+    .map(|position| data.iter().filter(|x| (*x & (1 << position)) != 0).count() > threshold)
+    .map(|x| if x { "1" } else { "0" })
+    .collect();
+
+  let gamma_bits = u32::from_str_radix(&binary_string, 2).unwrap();
+  let mask = u32::pow(2, row_length) - 1;
+  let epsilon_bits = gamma_bits ^ mask;
+
+  let power = gamma_bits * epsilon_bits;
+
+  println!("Power: {}", power);
+  assert_eq!(841526, power)
+}
+
+// Lame naive first effort!
 fn part_a(data: &Vec<String>) {
   let data: Vec<&str> = data.iter().map(AsRef::as_ref).collect();
 
@@ -15,9 +43,9 @@ fn part_a(data: &Vec<String>) {
     .map(|row| row.chars().map(|c| c.to_digit(10).unwrap()).collect())
     .collect();
 
-  let sum_rows: [u32; 10] = bit_rows
+  let sum_rows: [u32; 12] = bit_rows
     .iter()
-    .fold([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], |acc, x| {
+    .fold([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], |acc, x| {
       let mut new_val = acc;
       for (index, value) in acc.iter().enumerate() {
         new_val[index] = u32::from(x[index]) + value;
@@ -28,9 +56,26 @@ fn part_a(data: &Vec<String>) {
 
   let threshold: u32 = (bit_rows.len() as u32) / 2;
 
-  let back_to_bits = sum_rows.map(|x| x > threshold);
+  let gamma_bits = sum_rows
+    .map(|x| x > threshold)
+    .map(|x| if x { "1" } else { "0" })
+    .join("");
 
-  println!("{:?}", back_to_bits)
+  let epsilon_bits = sum_rows
+    .map(|x| x < threshold)
+    .map(|x| if x { "1" } else { "0" })
+    .join("");
+
+  let gamma_dec = isize::from_str_radix(&gamma_bits, 2).unwrap();
+  let epsilon_dec = isize::from_str_radix(&epsilon_bits, 2).unwrap();
+  let power = gamma_dec * epsilon_dec;
+
+  println!(
+    "result: {:?} g: {:?} {:?} e: {:?} {:?}, power: {:?}",
+    sum_rows, gamma_bits, gamma_dec, epsilon_bits, epsilon_dec, power
+  );
+
+  assert_eq!(841526, power)
 }
 
 fn part_b(data: &Vec<String>) {}
