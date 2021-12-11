@@ -34,6 +34,58 @@ fn part_a_take2(data: &Vec<String>) {
   assert_eq!(841526, power)
 }
 
+fn part_b(data: &Vec<String>) {
+  let row_length: u32 = data.first().unwrap().len() as u32;
+  // threshold for considering the result to be "on"
+  let threshold = data.len() / 2;
+
+  // convert input data to decimal
+  let data: Vec<u64> = data
+    .iter()
+    .map(|x| u64::from_str_radix(x, 2).unwrap())
+    .collect();
+
+  let mut remaining_values: Vec<u64> = data.clone();
+
+  for position in (0..row_length).rev() {
+    let on_count = remaining_values
+      .iter()
+      .filter(|x| (*x & (1 << position)) != 0)
+      .count();
+    let is_on = (on_count * 2) >= remaining_values.len();
+
+    remaining_values.retain(|x| ((*x & (1 << position)) != 0) == is_on);
+
+    if remaining_values.len() == 1 {
+      break;
+    }
+  }
+
+  let oxygen_generator = remaining_values[0];
+
+  let mut remaining_values: Vec<u64> = data.clone();
+
+  for position in (0..row_length).rev() {
+    let on_count = remaining_values
+      .iter()
+      .filter(|x| (*x & (1 << position)) != 0)
+      .count();
+
+    let is_on = (on_count * 2) >= remaining_values.len();
+
+    remaining_values.retain(|x| ((*x & (1 << position)) != 0) != is_on);
+
+    if remaining_values.len() == 1 {
+      break;
+    }
+  }
+
+  let co2_scrubber = remaining_values[0];
+
+  assert_eq!(4790390, co2_scrubber * oxygen_generator);
+  println!("life support rating: {:?}", co2_scrubber * oxygen_generator)
+}
+
 // Lame naive first effort!
 fn part_a(data: &Vec<String>) {
   let data: Vec<&str> = data.iter().map(AsRef::as_ref).collect();
@@ -77,5 +129,3 @@ fn part_a(data: &Vec<String>) {
 
   assert_eq!(841526, power)
 }
-
-fn part_b(data: &Vec<String>) {}
